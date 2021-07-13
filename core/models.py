@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 class Category(models.Model):
     name = models.CharField(max_length=100)
 
-    def __str__(Self):
+    def __str__(self):
         return self.name
 
 class Quiz(models.Model):

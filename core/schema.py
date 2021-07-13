@@ -21,14 +21,13 @@ class QuestionType(DjangoObjectType):
 class AnswerType(DjangoObjectType):
     class Meta:
         model = Answer
-        fields = ("question","answer")
+        fields = ("question","answer_text")
 
 
 class Query(graphene.ObjectType):
-    quiz = graphene.String()
+    
+    all_quiz = DjangoListField(QuizType)
 
-    def resolve_quiz(root, info):
-        return f"First question"
 
 
 schema = graphene.Schema(query=Query)
