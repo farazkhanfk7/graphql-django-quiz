@@ -1,4 +1,5 @@
 import graphene
+from graphene.types.mutation import Mutation
 from graphene_django import DjangoObjectType
 from graphene_django import DjangoListField
 from .models import Category,Quiz,Question,Answer
@@ -26,19 +27,38 @@ class AnswerType(DjangoObjectType):
 
 class Query(graphene.ObjectType):
     
-    # all_quiz = DjangoListField(QuizType) this works as well
+    # all_quiz = DjangoListField(QuizType) this works as well but with objects.get() / single
     all_quiz = graphene.List(QuizType, id=graphene.Int())
     all_answer = graphene.List(AnswerType, id=graphene.Int())
+    all_question = graphene.List(QuestionType, id=graphene.Int())
 
     def resolve_all_quiz(root, info, id):
         return Quiz.objects.filter(id=id)
 
+    def resolve_all_question(root, info, id):
+        return Question.objects.filter(id=id)
+    
     def resolve_all_answer(root, info, id):
-        return Answer.objects.filter(id=id)
-
+        return Answer.objects.filter(question=id)
 
     # def resolve_all_question(root, info):
     #     return Question.objects.all()
 
+class CategoryMutation(graphene.Mutation):
+    class Arguments:
+        name = graphene.String(required=True)
 
-schema = graphene.Schema(query=Query)
+    category = graphene.Field(CategoryType)
+
+    @classmethod
+    def mutate(cls, root, info, name):
+        category = Category(name=name)
+        category.save()
+        return CategoryMutation(category=category)
+
+
+class Mutation(graphene.ObjectType):
+    add_category = CategoryMutation.Field()
+
+
+schema = graphene.Schema(query=Query, mutation=Mutation)
