@@ -56,9 +56,39 @@ class CategoryMutation(graphene.Mutation):
         category.save()
         return CategoryMutation(category=category)
 
+class QuizMutation(graphene.Mutation):
+    class Arguments:
+        title = graphene.String()
+        category = graphene.ID()
+
+    quiz = graphene.Field(QuizType)
+
+    @classmethod
+    def mutate(cls, root, info, title, category):
+        quiz = Quiz(title=title,category_id=category)
+        quiz.save()
+        return QuizMutation(quiz=quiz)
+
+# another way to take input from users
+class QuestionInput(graphene.InputObjectType):
+    title = graphene.String(required=True)
+    quiz_id = graphene.ID(required=True)
+
+class QuestionMutation(graphene.Mutation):
+    class Arguments:
+        question_data = QuestionInput(required=True)
+
+    question = graphene.Field(QuestionType)
+
+    @classmethod
+    def mutate(cls, root, info, question_data):
+        question_ = Question(**question_data)
+        question_.save()
+        return QuestionMutation(question=question_)
 
 class Mutation(graphene.ObjectType):
     add_category = CategoryMutation.Field()
-
+    add_quiz = QuizMutation.Field()
+    add_question = QuestionMutation.Field()
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
