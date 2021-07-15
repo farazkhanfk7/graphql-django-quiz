@@ -47,14 +47,23 @@ class Query(graphene.ObjectType):
 class CategoryMutation(graphene.Mutation):
     class Arguments:
         name = graphene.String(required=True)
+        id_ = graphene.ID(required=False)
 
     category = graphene.Field(CategoryType)
 
     @classmethod
-    def mutate(cls, root, info, name):
-        category = Category(name=name)
-        category.save()
-        return CategoryMutation(category=category)
+    def mutate(cls, root, info, name, id_=None):
+        # If ID is present then update existing item
+        if id_ is not None:
+            category_ = Category.objects.get(id=id_)
+            category_.name = name
+            category_.save()
+            return CategoryMutation(category=category_)
+        #If ID is not present then add a new one
+        category_ = Category(name=name)
+        category_.save()
+        # for deleting simply use category_.delete()
+        return CategoryMutation(category=category_)
 
 class QuizMutation(graphene.Mutation):
     class Arguments:
